@@ -3,13 +3,7 @@ const defaultConfig = require("shadcn/ui/tailwind.config")
 
 module.exports = {
   ...defaultConfig,
-  content: [
-    ...defaultConfig.content,
-    "./index.html",
-    "./*.vue",
-    "./src/**/*.{vue,js,ts,jsx,tsx}",
-    "*.{js,ts,jsx,tsx,mdx}",
-  ],
+  content: ["./index.html", "./*.vue", "./src/**/*.{vue,js,ts,jsx,tsx}", "*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     ...defaultConfig.theme,
     extend: {
@@ -21,11 +15,6 @@ module.exports = {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
       },
     },
   },

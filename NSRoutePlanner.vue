@@ -4,7 +4,7 @@
       <!-- Header -->
       <div class="text-center mb-8">
         <h1 class="text-4xl font-bold text-gray-900 mb-2">NS Route Planner</h1>
-        <p class="text-gray-600">Find the best route for your journey</p>
+        <p class="text-gray-600">Find the best route for your journey in the Netherlands</p>
       </div>
 
       <!-- Search Form -->
@@ -20,7 +20,7 @@
                     id="from"
                     v-model="fromLocation"
                     type="text"
-                    placeholder="Station name or address"
+                    placeholder="Station name (e.g., Amsterdam Centraal)"
                     class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
@@ -34,7 +34,7 @@
                     id="to"
                     v-model="toLocation"
                     type="text"
-                    placeholder="Station name or address"
+                    placeholder="Station name (e.g., Utrecht Centraal)"
                     class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
@@ -120,8 +120,8 @@
                 </div>
               </div>
               <div class="text-right">
-                <div class="text-lg font-bold text-blue-600">€{{ route.price }}</div>
-                <div class="text-sm text-gray-500">{{ route.travelClass }}</div>
+                <div v-if="route.price" class="text-lg font-bold text-blue-600">€{{ route.price }}</div>
+                <div v-if="route.travelClass" class="text-sm text-gray-500">{{ route.travelClass }}</div>
               </div>
             </div>
 
@@ -134,12 +134,13 @@
               >
                 <!-- Transport Icon -->
                 <div class="flex-shrink-0">
-                  <TrainIcon v-if="step.mode === 'train'" class="h-6 w-6 text-blue-600" />
-                  <BusIcon v-else-if="step.mode === 'bus'" class="h-6 w-6 text-green-600" />
-                  <TramIcon v-else-if="step.mode === 'tram'" class="h-6 w-6 text-yellow-600" />
-                  <FootprintsIcon v-else-if="step.mode === 'walk'" class="h-6 w-6 text-gray-600" />
-                  <BikeIcon v-else-if="step.mode === 'bike'" class="h-6 w-6 text-orange-600" />
-                  <CarIcon v-else class="h-6 w-6 text-purple-600" />
+                  <TrainIcon v-if="step.mode === 'TRAIN'" class="h-6 w-6 text-blue-600" />
+                  <BusIcon v-else-if="step.mode === 'BUS'" class="h-6 w-6 text-green-600" />
+                  <TramIcon v-else-if="step.mode === 'TRAM'" class="h-6 w-6 text-yellow-600" />
+                  <FootprintsIcon v-else-if="step.mode === 'WALK'" class="h-6 w-6 text-gray-600" />
+                  <BikeIcon v-else-if="step.mode === 'BIKE'" class="h-6 w-6 text-orange-600" />
+                  <CarIcon v-else-if="step.mode === 'CAR'" class="h-6 w-6 text-purple-600" />
+                  <TrainIcon v-else class="h-6 w-6 text-gray-600" />
                 </div>
 
                 <!-- Step Details -->
@@ -236,112 +237,181 @@ onMounted(() => {
   travelTime.value = now.toTimeString().slice(0, 5)
 })
 
-// Mock NS API function (replace with actual API integration)
-const searchNSRoute = async (from, to, date, time, timeType) => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1500))
+// NS API configuration
+const NS_API_BASE = 'https://gateway.apiportal.ns.nl/reisinformatie-api'
+const NS_API_KEY = import.meta.env.VITE_NS_API_KEY || process.env.NS_API_KEY
+
+// Helper function to format time from ISO string
+const formatTime = (isoString) => {
+  if (!isoString) return ''
+  const date = new Date(isoString)
+  return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+}
+
+// Helper function to calculate duration between two times
+const calculateDuration = (start, end) => {
+  if (!start || !end) return ''
+  const startTime = new Date(start)
+  const endTime = new Date(end)
+  const diffMs = endTime - startTime
+  const diffMins = Math.floor(diffMs / 60000)
+  const hours = Math.floor(diffMins / 60)
+  const minutes = diffMins % 60
   
-  // Mock response - replace with actual NS API call
-  return [
-    {
-      departureTime: '14:32',
-      arrivalTime: '16:45',
-      duration: '2h 13m',
-      transfers: 1,
-      price: '18.90',
-      travelClass: '2nd class',
-      steps: [
-        {
-          mode: 'walk',
-          from: from,
-          to: 'Amsterdam Centraal',
-          departureTime: '14:32',
-          arrivalTime: '14:38',
-          duration: '6 min',
-          line: null,
-          platform: null
-        },
-        {
-          mode: 'train',
-          from: 'Amsterdam Centraal',
-          to: 'Utrecht Centraal',
-          departureTime: '14:42',
-          arrivalTime: '15:12',
-          duration: '30 min',
-          line: 'IC 3100',
-          platform: '5b'
-        },
-        {
-          mode: 'train',
-          from: 'Utrecht Centraal',
-          to: to,
-          departureTime: '15:18',
-          arrivalTime: '16:42',
-          duration: '1h 24m',
-          line: 'IC 800',
-          platform: '7a'
-        },
-        {
-          mode: 'walk',
-          from: to + ' Station',
-          to: to,
-          departureTime: '16:42',
-          arrivalTime: '16:45',
-          duration: '3 min',
-          line: null,
-          platform: null
-        }
-      ],
-      notes: 'Check for any service disruptions before traveling.'
-    },
-    {
-      departureTime: '14:47',
-      arrivalTime: '17:12',
-      duration: '2h 25m',
-      transfers: 2,
-      price: '18.90',
-      travelClass: '2nd class',
-      steps: [
-        {
-          mode: 'bus',
-          from: from,
-          to: 'Amsterdam Zuid',
-          departureTime: '14:47',
-          arrivalTime: '15:05',
-          duration: '18 min',
-          line: 'Bus 15',
-          platform: null
-        },
-        {
-          mode: 'train',
-          from: 'Amsterdam Zuid',
-          to: 'Den Haag Centraal',
-          departureTime: '15:12',
-          arrivalTime: '16:28',
-          duration: '1h 16m',
-          line: 'IC 2100',
-          platform: '3'
-        },
-        {
-          mode: 'tram',
-          from: 'Den Haag Centraal',
-          to: to,
-          departureTime: '16:35',
-          arrivalTime: '17:12',
-          duration: '37 min',
-          line: 'Tram 9',
-          platform: null
-        }
-      ],
-      notes: null
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`
+  }
+  return `${minutes}m`
+}
+
+// Helper function to find station by name
+const findStationByName = async (stationName) => {
+  try {
+    const response = await fetch(`${NS_API_BASE}/api/v2/stations?q=${encodeURIComponent(stationName)}`, {
+      headers: {
+        'Ocp-Apim-Subscription-Key': NS_API_KEY,
+        'Accept': 'application/json'
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Station search failed: ${response.status}`)
     }
-  ]
+    
+    const data = await response.json()
+    const stations = data.payload || []
+    
+    // Find exact match or closest match
+    const exactMatch = stations.find(station => 
+      station.namen?.lang?.toLowerCase() === stationName.toLowerCase() ||
+      station.namen?.middel?.toLowerCase() === stationName.toLowerCase() ||
+      station.namen?.kort?.toLowerCase() === stationName.toLowerCase()
+    )
+    
+    return exactMatch || stations[0] || null
+  } catch (err) {
+    console.error('Station search error:', err)
+    return null
+  }
+}
+
+// Main NS API function for route planning
+const searchNSRoute = async (from, to, date, time, timeType) => {
+  try {
+    // First, find the stations
+    const [fromStation, toStation] = await Promise.all([
+      findStationByName(from),
+      findStationByName(to)
+    ])
+    
+    if (!fromStation) {
+      throw new Error(`Station "${from}" not found. Please check the station name.`)
+    }
+    
+    if (!toStation) {
+      throw new Error(`Station "${to}" not found. Please check the station name.`)
+    }
+    
+    // Prepare the datetime parameter
+    const dateTime = new Date(`${date}T${time}:00`)
+    const isoDateTime = dateTime.toISOString()
+    
+    // Build the API URL
+    const params = new URLSearchParams({
+      fromStation: fromStation.code || fromStation.UICCode,
+      toStation: toStation.code || toStation.UICCode,
+      dateTime: isoDateTime,
+      searchForArrival: timeType === 'arrival' ? 'true' : 'false',
+      lang: 'en'
+    })
+    
+    const response = await fetch(`${NS_API_BASE}/api/v3/trips?${params}`, {
+      headers: {
+        'Ocp-Apim-Subscription-Key': NS_API_KEY,
+        'Accept': 'application/json'
+      }
+    })
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('API authentication failed. Please check your NS API key.')
+      } else if (response.status === 404) {
+        throw new Error('No routes found between these stations.')
+      } else {
+        throw new Error(`API request failed: ${response.status}`)
+      }
+    }
+    
+    const data = await response.json()
+    const travelAdvices = Array.isArray(data) ? data : [data]
+    
+    // Transform the API response to our format
+    const transformedRoutes = []
+    
+    for (const advice of travelAdvices) {
+      if (advice.trips && advice.trips.length > 0) {
+        for (const trip of advice.trips) {
+          const legs = trip.legs || []
+          const firstLeg = legs[0]
+          const lastLeg = legs[legs.length - 1]
+          
+          if (!firstLeg || !lastLeg) continue
+          
+          const route = {
+            departureTime: formatTime(firstLeg.origin?.plannedDateTime || firstLeg.origin?.actualDateTime),
+            arrivalTime: formatTime(lastLeg.destination?.plannedDateTime || lastLeg.destination?.actualDateTime),
+            duration: calculateDuration(
+              firstLeg.origin?.plannedDateTime || firstLeg.origin?.actualDateTime,
+              lastLeg.destination?.plannedDateTime || lastLeg.destination?.actualDateTime
+            ),
+            transfers: trip.transfers || 0,
+            price: trip.fares && trip.fares.length > 0 ? (trip.fares[0].priceInCents / 100).toFixed(2) : null,
+            travelClass: trip.fares && trip.fares.length > 0 ? 
+              (trip.fares[0].travelClass === 'SECOND_CLASS' ? '2nd class' : '1st class') : null,
+            steps: [],
+            notes: trip.messages && trip.messages.length > 0 ? trip.messages[0].text : null
+          }
+          
+          // Transform legs to steps
+          for (const leg of legs) {
+            const step = {
+              mode: leg.product?.type || leg.travelType || 'WALK',
+              from: leg.origin?.name || '',
+              to: leg.destination?.name || '',
+              departureTime: formatTime(leg.origin?.plannedDateTime || leg.origin?.actualDateTime),
+              arrivalTime: formatTime(leg.destination?.plannedDateTime || leg.destination?.actualDateTime),
+              duration: calculateDuration(
+                leg.origin?.plannedDateTime || leg.origin?.actualDateTime,
+                leg.destination?.plannedDateTime || leg.destination?.actualDateTime
+              ),
+              line: leg.product?.displayName || leg.product?.number || null,
+              platform: leg.origin?.plannedTrack || leg.origin?.actualTrack || null
+            }
+            
+            route.steps.push(step)
+          }
+          
+          transformedRoutes.push(route)
+        }
+      }
+    }
+    
+    return transformedRoutes
+  } catch (err) {
+    console.error('NS API Error:', err)
+    throw err
+  }
 }
 
 // Search function
 const searchRoute = async () => {
   if (!fromLocation.value.trim() || !toLocation.value.trim()) {
     error.value = 'Please enter both departure and destination locations.'
+    return
+  }
+  
+  if (!NS_API_KEY) {
+    error.value = 'NS API key is not configured. Please check your environment variables.'
     return
   }
 
@@ -351,11 +421,6 @@ const searchRoute = async () => {
   searched.value = true
 
   try {
-    // In a real implementation, you would:
-    // 1. Validate and potentially geocode addresses
-    // 2. Call the actual NS API with proper authentication
-    // 3. Handle API errors and edge cases
-    
     const results = await searchNSRoute(
       fromLocation.value,
       toLocation.value,
@@ -365,8 +430,12 @@ const searchRoute = async () => {
     )
     
     routes.value = results
+    
+    if (results.length === 0) {
+      error.value = 'No routes found. Please check your station names and try again.'
+    }
   } catch (err) {
-    error.value = 'Failed to fetch route information. Please try again later.'
+    error.value = err.message || 'Failed to fetch route information. Please try again later.'
     console.error('Route search error:', err)
   } finally {
     loading.value = false

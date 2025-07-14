@@ -1,5 +1,5 @@
 import { createApp } from "vue"
-import NSRoutePlanner from "./NSRoutePlanner.vue"
 import "./style.css"
+import NSRoutePlanner from "./NSRoutePlanner.vue"
 
 createApp(NSRoutePlanner).mount("#app")
