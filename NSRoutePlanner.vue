@@ -1,151 +1,176 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-    <div class="max-w-4xl mx-auto">
-      <!-- Header -->
-      <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">NS Route Planner</h1>
-        <p class="text-gray-600">Plan your journey across the Netherlands</p>
-      </div>
-
-      <!-- Search Form -->
-      <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label for="from" class="block text-sm font-medium text-gray-700 mb-2">From</label>
-            <input
-              id="from"
-              v-model="fromStation"
-              type="text"
-              placeholder="e.g., Amsterdam Centraal"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              @keyup.enter="searchRoutes"
-            />
-          </div>
-          <div>
-            <label for="to" class="block text-sm font-medium text-gray-700 mb-2">To</label>
-            <input
-              id="to"
-              v-model="toStation"
-              type="text"
-              placeholder="e.g., Utrecht Centraal"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              @keyup.enter="searchRoutes"
-            />
-          </div>
+  <v-app>
+    <v-main>
+      <v-container>
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <h1 class="text-h4 font-weight-bold mb-2">NS Route Planner</h1>
+          <p class="text-subtitle-1 text-medium-emphasis">Plan your journey across the Netherlands</p>
         </div>
-        
-        <div class="flex justify-center">
-          <button
-            @click="searchRoutes"
-            :disabled="loading || !fromStation.trim() || !toStation.trim()"
-            class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-8 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-          >
-            <Search class="w-4 h-4" />
-            {{ loading ? 'Searching...' : 'Search Routes' }}
-          </button>
-        </div>
-      </div>
 
-      <!-- Error Message -->
-      <div v-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-        <div class="flex items-center gap-2 text-red-800">
-          <AlertCircle class="w-5 h-5" />
-          <span class="font-medium">Error</span>
-        </div>
-        <p class="text-red-700 mt-1">{{ error }}</p>
-      </div>
+        <!-- Search Form -->
+        <v-card class="mb-6">
+          <v-card-item>
+            <v-card-title>Find Your Route</v-card-title>
+            <v-card-subtitle>Enter your departure and destination stations.</v-card-subtitle>
+          </v-card-item>
+          <v-card-text>
+            <v-row dense>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  label="From"
+                  id="from"
+                  v-model="fromStation"
+                  type="text"
+                  placeholder="e.g., Amsterdam Centraal"
+                  @keyup.enter="searchRoutes"
+                  variant="outlined"
+                  density="compact"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  label="To"
+                  id="to"
+                  v-model="toStation"
+                  type="text"
+                  placeholder="e.g., Utrecht Centraal"
+                  @keyup.enter="searchRoutes"
+                  variant="outlined"
+                  density="compact"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            
+            <div class="d-flex justify-center mt-4">
+              <v-btn
+                @click="searchRoutes"
+                :disabled="loading || !fromStation.trim() || !toStation.trim()"
+                color="primary"
+                size="large"
+              >
+                <v-icon start>mdi-magnify</v-icon>
+                {{ loading ? 'Searching...' : 'Search Routes' }}
+              </v-btn>
+            </div>
+          </v-card-text>
+        </v-card>
 
-      <!-- Loading State -->
-      <div v-if="loading" class="text-center py-8">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p class="text-gray-600 mt-2">Finding the best routes...</p>
-      </div>
-
-      <!-- Results -->
-      <div v-if="routes.length > 0 && !loading" class="space-y-4">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Available Routes</h2>
-        
-        <div
-          v-for="(route, index) in routes"
-          :key="index"
-          class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200"
+        <!-- Error Message -->
+        <v-alert
+          v-if="error"
+          type="error"
+          class="mb-6"
+          icon="mdi-alert-circle"
         >
-          <!-- Route Header -->
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <div class="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                <span>{{ formatTime(route.departureTime) }}</span>
-                <ArrowRight class="w-4 h-4 text-gray-400" />
-                <span>{{ formatTime(route.arrivalTime) }}</span>
-              </div>
-              <div class="text-sm text-gray-600 mt-1">
-                Duration: {{ route.duration }} • {{ route.transfers }} transfer{{ route.transfers !== 1 ? 's' : '' }}
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-green-600">€{{ route.price }}</div>
-              <div class="text-sm text-gray-500">2nd class</div>
-            </div>
-          </div>
+          <span class="font-weight-medium">Error:</span>
+          {{ error }}
+        </v-alert>
 
-          <!-- Route Steps -->
-          <div class="space-y-3">
-            <div
-              v-for="(step, stepIndex) in route.steps"
-              :key="stepIndex"
-              class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
-            >
-              <!-- Transport Icon -->
-              <div class="flex-shrink-0">
-                <Train v-if="step.type === 'train'" class="w-6 h-6 text-blue-600" />
-                <Bus v-else-if="step.type === 'bus'" class="w-6 h-6 text-green-600" />
-                <Zap v-else-if="step.type === 'tram'" class="w-6 h-6 text-yellow-600" />
-                <MapPin v-else class="w-6 h-6 text-gray-600" />
-              </div>
-
-              <!-- Step Details -->
-              <div class="flex-grow">
-                <div class="font-medium text-gray-900">{{ step.line }}</div>
-                <div class="text-sm text-gray-600">
-                  {{ step.from }} → {{ step.to }}
-                </div>
-                <div class="text-xs text-gray-500 mt-1">
-                  {{ formatTime(step.departureTime) }} - {{ formatTime(step.arrivalTime) }}
-                  <span v-if="step.platform" class="ml-2">Platform {{ step.platform }}</span>
-                  <span v-if="step.delay" class="ml-2 text-red-600">+{{ step.delay }}min</span>
-                </div>
-              </div>
-
-              <!-- Duration -->
-              <div class="text-sm text-gray-500 text-right">
-                {{ step.duration }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Route Status -->
-          <div v-if="route.status && route.status !== 'NORMAL'" class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div class="flex items-center gap-2 text-yellow-800">
-              <AlertTriangle class="w-4 h-4" />
-              <span class="font-medium">{{ getStatusText(route.status) }}</span>
-            </div>
-          </div>
+        <!-- Loading State -->
+        <div v-if="loading" class="text-center py-8">
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            size="64"
+            width="6"
+          ></v-progress-circular>
+          <p class="text-subtitle-1 text-medium-emphasis mt-2">Finding the best routes...</p>
         </div>
-      </div>
 
-      <!-- No Results -->
-      <div v-if="searched && routes.length === 0 && !loading && !error" class="text-center py-8">
-        <MapPin class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No routes found</h3>
-        <p class="text-gray-600">Try different stations or check your spelling.</p>
-      </div>
-    </div>
-  </div>
+        <!-- Results -->
+        <div v-if="routes.length > 0 && !loading" class="space-y-4">
+          <h2 class="text-h5 font-weight-bold mb-4">Available Routes</h2>
+          
+          <v-card
+            v-for="(route, index) in routes"
+            :key="index"
+            class="mb-4"
+          >
+            <v-card-item>
+              <div class="d-flex justify-space-between align-center">
+                <v-card-title class="text-h6 font-weight-semibold">
+                  {{ formatTime(route.departureTime) }} <v-icon size="small">mdi-arrow-right</v-icon> {{ formatTime(route.arrivalTime) }}
+                </v-card-title>
+                <div class="text-h5 font-weight-bold text-primary">€{{ route.price }}</div>
+              </div>
+            </v-card-item>
+            <v-card-text>
+              <p class="text-body-2 text-medium-emphasis mb-4">
+                Duration: {{ route.duration }} • {{ route.transfers }} transfer{{ route.transfers !== 1 ? 's' : '' }} • 2nd class
+              </p>
+
+              <!-- Route Steps -->
+              <div class="space-y-3">
+                <v-card
+                  v-for="(step, stepIndex) in route.steps"
+                  :key="stepIndex"
+                  class="mb-2"
+                  flat
+                  variant="outlined"
+                >
+                  <v-card-text class="d-flex align-center gap-4 pa-3">
+                    <!-- Transport Icon -->
+                    <div class="flex-shrink-0">
+                      <v-icon v-if="step.type === 'train'" color="primary">mdi-train</v-icon>
+                      <v-icon v-else-if="step.type === 'bus'" color="green">mdi-bus</v-icon>
+                      <v-icon v-else-if="step.type === 'tram'" color="yellow-darken-2">mdi-tram</v-icon>
+                      <v-icon v-else>mdi-map-marker</v-icon>
+                    </div>
+
+                    <!-- Step Details -->
+                    <div class="flex-grow-1">
+                      <div class="font-weight-medium">{{ step.line }}</div>
+                      <div class="text-body-2 text-medium-emphasis">
+                        {{ step.from }} → {{ step.to }}
+                      </div>
+                      <div class="text-caption text-medium-emphasis mt-1">
+                        {{ formatTime(step.departureTime) }} - {{ formatTime(step.arrivalTime) }}
+                        <span v-if="step.platform" class="ml-2">Platform {{ step.platform }}</span>
+                        <span v-if="step.delay" class="ml-2 text-error">+{{ step.delay }}min</span>
+                      </div>
+                    </div>
+
+                    <!-- Duration -->
+                    <div class="text-body-2 text-medium-emphasis text-right">
+                      {{ step.duration }}
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </div>
+
+              <!-- Route Status -->
+              <v-alert
+                v-if="route.status && route.status !== 'NORMAL'"
+                type="warning"
+                class="mt-4"
+                icon="mdi-alert-triangle"
+              >
+                <span class="font-weight-medium">{{ getStatusText(route.status) }}</span>
+              </v-alert>
+            </v-card-text>
+          </v-card>
+        </div>
+
+        <!-- No Results -->
+        <div v-if="searched && routes.length === 0 && !loading && !error" class="text-center py-8">
+          <v-icon size="64" color="medium-emphasis" class="mb-4">mdi-map-marker</v-icon>
+          <h3 class="text-h6 font-weight-medium mb-2">No routes found</h3>
+          <p class="text-subtitle-1 text-medium-emphasis">Try different stations or check your spelling.</p>
+        </div>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Search, ArrowRight, Train, Bus, Zap, MapPin, AlertCircle, AlertTriangle } from 'lucide-vue-next'
+// Removed Lucide icons and Shadcn component imports
+// import { Search, ArrowRight, Train, Bus, Zap, MapPin, AlertCircle, AlertTriangle } from 'lucide-vue-next'
+// import { Button } from '@/components/ui/button'
+// import { Input } from '@/components/ui/input'
+// import { Label } from '@/components/ui/label'
+// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 // Reactive state
 const fromStation = ref('')
@@ -198,9 +223,10 @@ async function getRoutes(fromCode, toCode) {
     }
     
     const data = await response.json()
+    console.log('Raw data from getRoutes:', data)
     
-    if (data && data.length > 0 && data[0].trips) {
-      return data[0].trips
+    if (data && data.trips) {
+      return data.trips
     }
     
     return []
@@ -212,6 +238,7 @@ async function getRoutes(fromCode, toCode) {
 
 // Transform NS API data to our format
 function transformRoute(trip) {
+  console.log('Transforming trip:', trip)
   const legs = trip.legs || []
   const steps = []
   
@@ -234,7 +261,7 @@ function transformRoute(trip) {
   const firstLeg = legs[0]
   const lastLeg = legs[legs.length - 1]
   
-  return {
+  const transformed = {
     departureTime: firstLeg?.origin?.plannedDateTime || firstLeg?.origin?.actualDateTime,
     arrivalTime: lastLeg?.destination?.plannedDateTime || lastLeg?.destination?.actualDateTime,
     duration: formatDuration(trip.plannedDurationInMinutes),
@@ -243,6 +270,8 @@ function transformRoute(trip) {
     steps: steps,
     status: trip.status
   }
+  console.log('Transformed route:', transformed)
+  return transformed
 }
 
 function getTransportType(nsType) {
@@ -334,12 +363,14 @@ async function searchRoutes() {
 
     // Get routes
     const trips = await getRoutes(fromCode, toCode)
+    console.log('Trips received:', trips)
     
     if (trips.length === 0) {
       routes.value = []
     } else {
       routes.value = trips.slice(0, 5).map(transformRoute)
     }
+    console.log('Final routes.value:', routes.value)
   } catch (err) {
     console.error('Search error:', err)
     error.value = err.message || 'Failed to search routes. Please try again.'

@@ -1,0 +1,37 @@
+[vite] connecting... client:495:9
+[vite] connected. client:618:15
+Unknown property ‘-moz-osx-font-smoothing’.  Declaration dropped. v0-ns-routing-hg:546:29
+Ruleset ignored due to bad selector. v0-ns-routing-hg:559:27
+XHRGET
+https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/stations?q=Amsterdam Centraal&limit=1
+[HTTP/2 200  0ms]
+
+XHRGET
+https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/stations?q=Utrecht Centraal&limit=1
+[HTTP/2 200  0ms]
+
+XHROPTIONS
+https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/stations?q=Utrecht Centraal&limit=1
+[HTTP/2 200  86ms]
+
+XHROPTIONS
+https://gateway.apiportal.ns.nl/reisinformatie-api/api/v2/stations?q=Amsterdam Centraal&limit=1
+[HTTP/2 200  82ms]
+
+XHRGET
+https://gateway.apiportal.ns.nl/reisinformatie-api/api/v3/trips?fromStation=ASD&toStation=UT
+[HTTP/2 200  401ms]
+
+XHROPTIONS
+https://gateway.apiportal.ns.nl/reisinformatie-api/api/v3/trips?fromStation=ASD&toStation=UT
+[HTTP/2 200  33ms]
+
+Raw data from getRoutes: 
+Object { source: "HARP", trips: (6) […], scrollRequestBackwardContext: "3|OB|MTµ14µ14154µ14154µ14181µ14181µ0µ0µ185µ14142µ1µ0µ10µ0µ0µ-2147483648µ1µ2|PDHµfc220ba90d7520ca07c1062e48200e2a|RDµ14072025|RTµ194200|USµ0|RSµINIT", scrollRequestForwardContext: "3|OF|MTµ14µ14231µ14231µ14257µ14257µ0µ0µ185µ14215µ6µ0µ10µ0µ0µ-2147483648µ1µ2|PDHµfc220ba90d7520ca07c1062e48200e2a|RDµ14072025|RTµ194200|USµ0|RSµINIT" }
+NSRoutePlanner.vue:65:13
+Trips received: 
+Array []
+NSRoutePlanner.vue:205:13
+Final routes.value: 
+Proxy { <target>: [], <handler>: {…} }
+NSRoutePlanner.vue:212:13
