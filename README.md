@@ -86,7 +86,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Create a license file:
 
-```text file="LICENSE"
+\`\`\`text file="LICENSE"
 MIT License
 
 Copyright (c) 2024 NS Route Planner
