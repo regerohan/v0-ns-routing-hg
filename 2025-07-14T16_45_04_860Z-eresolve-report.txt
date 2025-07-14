@@ -1,0 +1,14 @@
+'Log files:
+C:\Users\reger\AppData\Local\npm-cache\_logs\2025-07-14T16_45_04_860Z-debug-0.log
+
+# npm resolution error report
+
+While resolving: rollup@4.45.0
+Found: dev vite@"^7.0.0" from the root project
+
+Could not resolve dependency:
+dev vite@"^7.0.0" from the root project
+
+Fix the upstream dependency conflict, or retry
+this command with --force or --legacy-peer-deps
+to accept an incorrect (and potentially broken) dependency resolution.
