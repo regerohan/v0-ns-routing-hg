@@ -9,4 +9,8 @@ export default defineConfig({
     // Make environment variables available at build time
     "process.env.NS_API_KEY": JSON.stringify(process.env.VITE_NS_API_KEY),
   },
+  build: {
+    outDir: "dist",
+    assetsDir: "assets",
+  },
 })
